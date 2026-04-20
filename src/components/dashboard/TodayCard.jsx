@@ -1,20 +1,16 @@
 /**
- * TodayCard — shows today's date, last recorded emotion, and the
- * primary CTA to write today's entry.
- *
- * Also shows the current theme mode (Associative / Corrective) as a
- * subtle status badge so the user knows what mode the dashboard is in.
+ * TodayCard — date, emotion, and CTA to write (flat light card).
  */
 import { Link } from 'react-router-dom'
+import { PenLine, Sparkles, Leaf } from 'lucide-react'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge }  from '@/components/ui/badge'
 import MoodBadge  from '@/components/shared/MoodBadge'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTheme } from '@/context/ThemeContext'
 
-/**
- * Format today's date as "Tuesday, April 21"
- */
 function formatToday() {
     return new Date().toLocaleDateString('en-US', {
         weekday: 'long',
@@ -26,40 +22,42 @@ function formatToday() {
 export default function TodayCard({ lastEmotion, hasWrittenToday }) {
     const { mode } = useTheme()
 
-    const modeLabel = mode === 'corrective' ? 'Corrective' : 'Associative'
+    const modeLabel = mode === 'corrective' ? 'Calm palette' : 'Mirroring palette'
     const modeDesc  = mode === 'corrective'
-        ? 'Healing palette active'
-        : 'Emotion-mirroring palette'
+        ? 'Grounding colors after your last save'
+        : 'Colors echo your recent emotional tone'
 
     return (
-        <Card className="shadow-brutal">
+        <Card className="rounded-2xl border border-border bg-card flat-card">
             <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                     <CardTitle className="font-heading text-sm text-muted-foreground font-normal">
                         {formatToday()}
                     </CardTitle>
 
-                    {/* Theme mode indicator */}
-                    <Tooltip_stub>
-                        <Badge
-                            variant="outline"
-                            className="font-mono-label text-[10px] cursor-default"
-                            style={{
-                                borderColor: mode === 'corrective' ? '#38BDF833' : '#F59E0B33',
-                                color:       mode === 'corrective' ? '#38BDF8'   : '#F59E0B',
-                                backgroundColor: mode === 'corrective' ? '#38BDF808' : '#F59E0B08',
-                            }}
-                            title={modeDesc}
-                        >
-                            {mode === 'corrective' ? '◇' : '✦'} {modeLabel}
-                        </Badge>
-                    </Tooltip_stub>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Badge
+                                variant="outline"
+                                className="font-mono-label text-[10px] cursor-default gap-1 border-primary/25 bg-primary/5 text-primary"
+                            >
+                                {mode === 'corrective' ? (
+                                    <Leaf className="h-3 w-3" aria-hidden />
+                                ) : (
+                                    <Sparkles className="h-3 w-3" aria-hidden />
+                                )}
+                                {modeLabel}
+                            </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                            {modeDesc}
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </CardHeader>
 
-            <CardContent className="space-y-5">
-                {/* Last detected emotion */}
-                <div className="space-y-1">
+            <CardContent className="space-y-6">
+                <div className="space-y-2">
                     <p className="font-mono-label text-[10px] text-muted-foreground uppercase tracking-wider">
                         Last detected emotion
                     </p>
@@ -69,30 +67,24 @@ export default function TodayCard({ lastEmotion, hasWrittenToday }) {
                     }
                 </div>
 
-                {/* Status message */}
-                <p className="text-sm text-muted-foreground leading-snug">
+                <p className="text-base text-muted-foreground leading-relaxed">
                     {hasWrittenToday
                         ? "You've written today. Come back tomorrow to keep your streak alive."
                         : "Today's entry is waiting for you."}
                 </p>
 
-                {/* Primary CTA */}
                 <Button
                     asChild
-                    className="w-full shadow-brutal"
+                    className="w-full h-12 rounded-full text-base"
                     size="lg"
                     variant={hasWrittenToday ? 'outline' : 'default'}
                 >
-                    <Link to="/journal">
-                        {hasWrittenToday ? '✎  Write again' : '✎  Write today\'s entry'}
+                    <Link to="/journal" className="gap-2">
+                        <PenLine className="h-5 w-5" />
+                        {hasWrittenToday ? 'Write another entry' : 'Write today\'s entry'}
                     </Link>
                 </Button>
             </CardContent>
         </Card>
     )
-}
-
-// Tiny wrapper so we don't need Tooltip import just for title attr
-function Tooltip_stub({ children }) {
-    return children
 }

@@ -1,17 +1,10 @@
 /**
- * JournalView — read-only display of a past journal entry.
- *
- * Route: /journal/:id
- *
- * Shows:
- *  - Entry date, emotion badge, word count
- *  - Full entry text in a Card
- *  - All saved chat messages for this entry in a ScrollArea
- *  - Option to open ChatPanel to continue the conversation
+ * JournalView — past entry + Sage (opens from route state when requested).
  */
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
+import { ArrowLeft, Bot, MessageCircle } from 'lucide-react'
 
 import Navbar from '@/components/layout/Navbar'
 
@@ -22,7 +15,6 @@ import {
     CardTitle,
     CardDescription,
 } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator }  from '@/components/ui/separator'
 import { Button }     from '@/components/ui/button'
 import { Skeleton }   from '@/components/ui/skeleton'
@@ -33,11 +25,8 @@ import ChatPanel  from '@/components/chatbot/ChatPanel'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { getEntryById }  from '@/services/journalService'
-import { getMessages }   from '@/services/chatbotService'
+import { getMessages } from '@/services/chatbotService'
 
-/**
- * Format date as "Tuesday, April 21, 2026"
- */
 function formatFull(iso) {
     return new Date(iso).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -52,11 +41,19 @@ export default function JournalView() {
     const { user }       = useAuth()
     const { setEmotion } = useTheme()
     const navigate       = useNavigate()
+    const location       = useLocation()
 
     const [entry,       setEntry]       = useState(null)
     const [chatHistory, setChatHistory] = useState([])
     const [loading,     setLoading]     = useState(true)
     const [chatOpen,    setChatOpen]    = useState(false)
+
+    useEffect(() => {
+        if (location.state?.openSage) {
+            setChatOpen(true)
+            window.history.replaceState({}, '', location.pathname + location.search)
+        }
+    }, [location.state, location.pathname, location.search])
 
     useEffect(() => {
         if (!user || !id) return
@@ -69,7 +66,6 @@ export default function JournalView() {
                 setEntry(fetchedEntry)
                 setChatHistory(fetchedMessages)
 
-                // Apply corrective theme for the past entry's emotion
                 setEmotion(fetchedEntry?.emotion_label ?? 'neutral', 'corrective')
             })
             .catch(err => {
@@ -82,98 +78,109 @@ export default function JournalView() {
 
     return (
         <div
-            className="min-h-screen"
+            className="min-h-screen bg-background"
             style={{ backgroundColor: 'var(--theme-bg-primary, var(--background))' }}
         >
             <Navbar />
 
-            <main className="mx-auto max-w-2xl px-4 sm:px-6 py-8 space-y-6">
-                {/* Back link */}
+            <main className="mx-auto max-w-2xl px-4 sm:px-6 py-10 space-y-8">
                 <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => navigate('/dashboard')}
-                    className="font-mono-label text-xs text-muted-foreground"
+                    className="font-mono-label text-xs text-muted-foreground gap-2 -ml-2"
                 >
-                    ← Back to Dashboard
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to Dashboard
                 </Button>
 
                 {loading ? (
-                    // Loading skeleton
                     <div className="space-y-4">
-                        <Skeleton className="h-6 w-2/3" />
-                        <Skeleton className="h-4 w-1/4" />
-                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-8 w-2/3 rounded-xl" />
+                        <Skeleton className="h-4 w-1/4 rounded-lg" />
+                        <Skeleton className="h-48 w-full rounded-2xl" />
                     </div>
                 ) : entry ? (
                     <>
-                        {/* Entry card */}
-                        <Card className="shadow-brutal-muted">
-                            <CardHeader>
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="space-y-1">
-                                        <CardTitle className="font-heading text-lg">
+                        <Card className="flat-card rounded-2xl border border-border">
+                            <CardHeader className="space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                    <div className="space-y-2">
+                                        <CardTitle className="font-heading text-xl sm:text-2xl">
                                             {formatFull(entry.created_at)}
                                         </CardTitle>
-                                        <CardDescription className="flex items-center gap-2">
+                                        <CardDescription className="flex flex-wrap items-center gap-2 text-base">
                                             <MoodBadge emotion={entry.emotion_label} />
-                                            <span className="font-mono-label text-[10px]">
+                                            <span className="font-mono-label text-[11px]">
                                                 {entry.word_count ?? 0} words
                                             </span>
                                         </CardDescription>
                                     </div>
 
-                                    {/* Open chatbot for this entry */}
                                     <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="font-mono-label text-xs shrink-0"
+                                        type="button"
+                                        variant="secondary"
+                                        size="lg"
+                                        className="font-mono-label text-sm rounded-full shrink-0 border border-border h-12 px-6"
                                         onClick={() => setChatOpen(true)}
                                     >
-                                        ◆ Talk about this
+                                        <MessageCircle className="h-4 w-4 mr-2" />
+                                        Sage
                                     </Button>
                                 </div>
                             </CardHeader>
 
                             <Separator />
 
-                            <CardContent className="pt-5">
-                                <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                            <CardContent className="pt-6">
+                                <p className="text-base sm:text-lg leading-relaxed text-foreground whitespace-pre-wrap">
                                     {entry.content}
                                 </p>
                             </CardContent>
                         </Card>
 
-                        {/* Chat history for this entry */}
                         {chatHistory.length > 0 && (
-                            <Card className="shadow-brutal-muted">
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="font-heading text-sm text-muted-foreground font-normal">
-                                        Conversation with Sage
+                            <Card className="flat-card rounded-2xl border border-border overflow-hidden">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="font-heading text-base flex items-center gap-2">
+                                        <Bot className="h-5 w-5 text-primary" />
+                                        Sage conversation
                                     </CardTitle>
+                                    <CardDescription className="text-sm">
+                                        Messages stay with this entry — open Sage to continue.
+                                    </CardDescription>
                                 </CardHeader>
 
                                 <CardContent className="p-0">
-                                    <ScrollArea className="max-h-80 px-6 pb-4">
-                                        <div className="space-y-3">
+                                    {/* Native overflow: reliable scroll on mobile inside cards */}
+                                    <div
+                                        className="max-h-[min(28rem,60svh)] overflow-y-auto overscroll-y-contain touch-pan-y px-5 sm:px-6 py-3 [-webkit-overflow-scrolling:touch]"
+                                    >
+                                        <ul className="space-y-3 pb-2">
                                             {chatHistory.map((msg, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                                <li
+                                                    key={msg.id ?? idx}
+                                                    className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                                 >
+                                                    {msg.role === 'assistant' && (
+                                                        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted">
+                                                            <Bot className="h-4 w-4" />
+                                                        </div>
+                                                    )}
                                                     <div
-                                                        className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                                                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
                                                             msg.role === 'user'
-                                                                ? 'bg-primary text-primary-foreground rounded-br-sm'
-                                                                : 'bg-secondary text-foreground rounded-bl-sm border border-border'
+                                                                ? 'bg-primary text-primary-foreground rounded-br-md'
+                                                                : 'bg-muted text-foreground rounded-bl-md border border-border'
                                                         }`}
                                                     >
                                                         {msg.content}
                                                     </div>
-                                                </div>
+                                                </li>
                                             ))}
-                                        </div>
-                                    </ScrollArea>
+                                        </ul>
+                                    </div>
                                 </CardContent>
                             </Card>
                         )}
@@ -181,7 +188,6 @@ export default function JournalView() {
                 ) : null}
             </main>
 
-            {/* Chat panel for continuing conversation */}
             <ChatPanel
                 open={chatOpen}
                 onClose={() => setChatOpen(false)}

@@ -60,7 +60,7 @@ function buildWeeklyData(entries) {
 function CustomTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null
     return (
-        <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs shadow-md space-y-1">
+        <div className="bg-card border border-border rounded-xl px-3 py-2 text-xs flat-card space-y-1">
             <p className="text-muted-foreground font-mono-label">{label}</p>
             {payload.map(p => (
                 <p key={p.name} style={{ color: p.fill }}>
@@ -86,17 +86,17 @@ export default function BalanceBar({ entries = [] }) {
     return (
         <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0 0)" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
 
                 <XAxis
                     dataKey="week"
-                    tick={{ fontSize: 10, fill: 'oklch(0.55 0 0)', fontFamily: 'monospace' }}
+                    tick={{ fontSize: 11, fill: '#64748B', fontFamily: 'var(--font-sans)' }}
                     axisLine={false}
                     tickLine={false}
                 />
                 <YAxis
                     allowDecimals={false}
-                    tick={{ fontSize: 10, fill: 'oklch(0.55 0 0)', fontFamily: 'monospace' }}
+                    tick={{ fontSize: 11, fill: '#64748B', fontFamily: 'var(--font-sans)' }}
                     axisLine={false}
                     tickLine={false}
                 />
@@ -107,7 +107,7 @@ export default function BalanceBar({ entries = [] }) {
                     wrapperStyle={{ fontSize: 10, fontFamily: 'monospace', paddingTop: 12 }}
                 />
 
-                <Bar dataKey="positive" stackId="a" fill="#F59E0B" radius={[0, 0, 0, 0]} name="positive" />
+                <Bar dataKey="positive" stackId="a" fill="#6D28D9" radius={[0, 0, 0, 0]} name="positive" />
                 <Bar dataKey="neutral"  stackId="a" fill="#6B7280" name="neutral" />
                 <Bar dataKey="negative" stackId="a" fill="#F87171" radius={[3, 3, 0, 0]} name="negative" />
             </BarChart>

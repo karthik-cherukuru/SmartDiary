@@ -12,7 +12,7 @@
  *
  * Smooth transitions are handled in index.css via `transition` on html.
  */
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { THEMES } from '@/data/themes'
 
 // ----- Context object -----
@@ -45,7 +45,8 @@ export function ThemeProvider({ children }) {
     )
 
     // Main setter — called by Journal (associative) and Dashboard (corrective)
-    const setEmotion = (label, themeMode = 'associative') => {
+    // Wrapped in useCallback to maintain stable reference and prevent infinite re-renders
+    const setEmotion = useCallback((label, themeMode = 'associative') => {
         // Normalise label — fall back to neutral if unknown
         const safeLabel = THEMES[label] ? label : 'neutral'
         const palette   = THEMES[safeLabel]?.[themeMode]
@@ -53,7 +54,7 @@ export function ThemeProvider({ children }) {
         setEmotionState(safeLabel)
         setModeState(themeMode)
         setCurrentTheme(palette ?? null)
-    }
+    }, [])
 
     // Whenever currentTheme changes, push CSS vars to :root
     useEffect(() => {

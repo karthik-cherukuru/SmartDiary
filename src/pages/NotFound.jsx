@@ -14,7 +14,7 @@ export default function NotFound() {
             <p className="text-sm text-muted-foreground max-w-xs">
                 The page you're looking for doesn't exist or has been moved.
             </p>
-            <Button asChild className="shadow-brutal">
+            <Button asChild className="rounded-full">
                 <Link to="/dashboard">← Back to Dashboard</Link>
             </Button>
         </div>

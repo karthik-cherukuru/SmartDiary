@@ -1,3 +1,4 @@
+import * as React from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva } from "class-variance-authority";
 
@@ -44,12 +45,28 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  asChild = false,
   ...props
 }) {
+  const classes = cn(buttonVariants({ variant, size, className }))
+
+  // shadcn-style API: merge styles onto Link (or any single child) instead of nesting buttons
+  if (asChild) {
+    const child = props.children
+    if (!React.isValidElement(child)) {
+      throw new Error("Button with asChild expects a single React element child.")
+    }
+    const { children: _c, ...rest } = props
+    return React.cloneElement(child, {
+      ...rest,
+      className: cn(classes, child.props.className),
+    })
+  }
+
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={classes}
       {...props} />
   );
 }

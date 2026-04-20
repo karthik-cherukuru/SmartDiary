@@ -12,7 +12,7 @@
  * Confetti fires when a streak milestone is hit (triggered from Journal page
  * via location state).
  */
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
@@ -44,46 +44,65 @@ function fireConfetti() {
         particleCount: 140,
         spread:        80,
         origin:        { y: 0.6 },
-        colors:        ['#F59E0B', '#FBBF24', '#FCD34D', '#ffffff'],
+        colors:        ['#6D28D9', '#8B5CF6', '#C4B5FD', '#F5F3FF'],
     })
-    // Second burst for drama
     setTimeout(() => {
         confetti({
             particleCount: 60,
             spread:        60,
             origin:        { x: 0.2, y: 0.7 },
-            colors:        ['#F59E0B', '#ffffff'],
+            colors:        ['#6D28D9', '#E9D5FF'],
         })
     }, 300)
 }
 
 export default function Dashboard() {
-    const { user, profile } = useAuth()
+    const { user, profile, loading: authLoading } = useAuth()
     const { setEmotion }    = useTheme()
     const location          = useLocation()
 
     const [entries,     setEntries]     = useState([])
     const [streakData,  setStreakData]  = useState(null)
     const [loadingData, setLoadingData] = useState(true)
+    const loadingRef = useRef(false)
+
+    // Reset loading ref on mount
+    useEffect(() => {
+        loadingRef.current = false
+    }, [])
 
     // Fetch entries and streak on mount
     const loadData = useCallback(async () => {
-        if (!user) return
+        // Wait for auth to finish before attempting to load
+        if (authLoading) return
+
+        if (!user?.id) {
+            setLoadingData(false)
+            return
+        }
+
+        // Prevent concurrent loading
+        if (loadingRef.current) return
+
+        loadingRef.current = true
         setLoadingData(true)
+
         try {
             const [fetchedEntries, fetchedStreak] = await Promise.all([
                 getEntries(user.id, 20),
                 getStreak(user.id),
             ])
+
             setEntries(fetchedEntries)
             setStreakData(fetchedStreak)
         } catch (err) {
-            console.error('[Dashboard] loadData error:', err.message)
-            toast.error('Could not load your diary data.')
+            console.error('[Dashboard] loadData error:', err)
+            toast.error(`Could not load your diary data: ${err.message}`)
         } finally {
+            loadingRef.current = false
             setLoadingData(false)
         }
-    }, [user])
+    }, [user, authLoading])
 
     // loadData is stable (useCallback); state is only set in async callbacks, not synchronously
     useEffect(() => {
@@ -114,7 +133,7 @@ export default function Dashboard() {
 
         if (state?.isMilestone) {
             fireConfetti()
-            toast.success(`🔥 ${state.newStreak}-day streak milestone!`, {
+            toast.success(`${state.newStreak}-day streak milestone`, {
                 duration: 5000,
             })
         }
@@ -135,13 +154,13 @@ export default function Dashboard() {
 
             <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
                 {/* Greeting */}
-                <header className="mb-8">
-                    <h1 className="font-heading text-2xl font-bold text-foreground">
+                <header className="mb-10">
+                    <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                         {profile?.display_name
                             ? `Good to see you, ${profile.display_name}.`
                             : 'Welcome back.'}
                     </h1>
-                    <p className="text-muted-foreground text-sm mt-1">
+                    <p className="text-muted-foreground text-base mt-2">
                         {wroteToday
                             ? "You've written today. Your diary is up to date."
                             : "Your diary is waiting. Take a few minutes to check in."}

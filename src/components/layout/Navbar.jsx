@@ -1,15 +1,17 @@
 /**
- * Navbar — persistent top bar shown on all protected pages.
- *
- * Contains:
- *  - App logo / name (links to /dashboard)
- *  - Navigation links: Dashboard, Analytics
- *  - Streak flame badge
- *  - User avatar with dropdown (Profile, Sign Out)
+ * Navbar — flat light bar with primary navigation.
  */
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import {
+    LayoutDashboard,
+    BarChart3,
+    BookOpen,
+    Mail,
+    Info,
+    Flame,
+} from 'lucide-react'
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -26,10 +28,11 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/context/AuthContext'
 import { getStreak } from '@/services/streakService'
 
-// Nav links visible in the top bar
 const NAV_LINKS = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Analytics', href: '/analytics' },
+    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { label: 'About',     href: '/about',     icon: Info },
+    { label: 'Contact',   href: '/contact',   icon: Mail },
 ]
 
 export default function Navbar() {
@@ -39,7 +42,6 @@ export default function Navbar() {
 
     const [streak, setStreak] = useState(null)
 
-    // Fetch streak on mount to show the flame badge
     useEffect(() => {
         if (!user) return
 
@@ -57,7 +59,6 @@ export default function Navbar() {
         }
     }
 
-    // Avatar URL from profile, fallback to initials
     const avatarUrl = profile?.avatar_url ?? null
     const initials  = (profile?.display_name ?? user?.email ?? 'U')
         .slice(0, 2)
@@ -66,51 +67,54 @@ export default function Navbar() {
     const isActive = (href) => location.pathname === href
 
     return (
-        <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-sm">
-            <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-sm">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
 
-                {/* ---- Logo ---- */}
                 <Link
                     to="/dashboard"
-                    className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+                    className="flex items-center gap-2.5 text-foreground hover:text-primary transition-colors"
                 >
-                    <span className="text-primary font-mono-label text-lg leading-none">✦</span>
-                    <span className="font-heading font-semibold tracking-tight text-sm">
+                    <BookOpen className="h-6 w-6 text-primary shrink-0" aria-hidden />
+                    <span className="font-heading font-semibold tracking-tight text-base sm:text-lg">
                         Smart Diary
                     </span>
                 </Link>
 
-                {/* ---- Nav links ---- */}
-                <nav className="hidden sm:flex items-center gap-1">
-                    {NAV_LINKS.map(link => (
-                        <Button
-                            key={link.href}
-                            asChild
-                            variant="ghost"
-                            size="sm"
-                            className={`text-xs font-mono-label ${
-                                isActive(link.href)
-                                    ? 'text-foreground bg-secondary'
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                        >
-                            <Link to={link.href}>{link.label}</Link>
-                        </Button>
-                    ))}
+                <nav className="hidden lg:flex items-center gap-1">
+                    {NAV_LINKS.map(link => {
+                        const Icon = link.icon
+                        return (
+                            <Button
+                                key={link.href}
+                                asChild
+                                variant="ghost"
+                                size="sm"
+                                className={`text-sm font-medium gap-2 ${
+                                    isActive(link.href)
+                                        ? 'text-foreground bg-secondary'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                <Link to={link.href}>
+                                    <Icon className="h-4 w-4" aria-hidden />
+                                    {link.label}
+                                </Link>
+                            </Button>
+                        )
+                    })}
                 </nav>
 
-                {/* ---- Right side: streak + avatar ---- */}
                 <div className="flex items-center gap-3">
 
-                    {/* Streak flame badge */}
                     {streak !== null && streak > 0 && (
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Badge
                                     variant="outline"
-                                    className="font-mono-label cursor-default border-amber-500/40 bg-amber-500/10 text-amber-400 text-[10px] px-2"
+                                    className="font-mono-label cursor-default border-primary/30 bg-primary/5 text-primary text-[11px] px-2.5 py-1 gap-1"
                                 >
-                                    {'▲'} {streak}d
+                                    <Flame className="h-3.5 w-3.5" aria-hidden />
+                                    {streak}d
                                 </Badge>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
@@ -119,14 +123,15 @@ export default function Navbar() {
                         </Tooltip>
                     )}
 
-                    {/* User avatar + dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button
-                                className="rounded-full ring-2 ring-border hover:ring-primary transition-all focus:outline-none"
+                            <div
+                                className="rounded-full ring-1 ring-border hover:ring-primary transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                role="button"
+                                tabIndex={0}
                                 aria-label="Open user menu"
                             >
-                                <Avatar className="h-8 w-8">
+                                <Avatar className="h-9 w-9">
                                     {avatarUrl && (
                                         <AvatarImage
                                             src={avatarUrl}
@@ -137,11 +142,10 @@ export default function Navbar() {
                                         {initials}
                                     </AvatarFallback>
                                 </Avatar>
-                            </button>
+                            </div>
                         </DropdownMenuTrigger>
 
-                        <DropdownMenuContent align="end" className="w-48">
-                            {/* User name header */}
+                        <DropdownMenuContent align="end" className="w-52">
                             <div className="px-2 py-1.5">
                                 <p className="text-xs font-semibold text-foreground truncate">
                                     {profile?.display_name ?? 'You'}
@@ -154,18 +158,33 @@ export default function Navbar() {
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem asChild>
-                                <Link to="/profile" className="cursor-pointer">
+                                <Link to="/profile" className="cursor-pointer text-sm">
                                     Profile
                                 </Link>
                             </DropdownMenuItem>
+
+                            <DropdownMenuSeparator className="lg:hidden" />
+                            <div className="lg:hidden py-1 space-y-0.5">
+                                {NAV_LINKS.map(link => {
+                                    const Icon = link.icon
+                                    return (
+                                        <DropdownMenuItem key={link.href} asChild>
+                                            <Link to={link.href} className="cursor-pointer gap-2 flex text-sm">
+                                                <Icon className="h-4 w-4" />
+                                                {link.label}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    )
+                                })}
+                            </div>
 
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem
                                 onClick={handleSignOut}
-                                className="text-destructive focus:text-destructive cursor-pointer"
+                                className="text-destructive focus:text-destructive cursor-pointer text-sm"
                             >
-                                Sign Out
+                                Sign out
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

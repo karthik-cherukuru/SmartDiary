@@ -1,9 +1,5 @@
 /**
- * MoodTimeline — Recharts AreaChart showing emotion scores over time.
- *
- * Maps each emotion label to a numeric y-axis score (1–7) and renders
- * a colored area under the curve, with the line colored by each emotion's
- * accent color.
+ * MoodTimeline — area chart (solid fill, no gradients).
  */
 import {
     AreaChart,
@@ -18,7 +14,6 @@ import {
 import { EMOTION_COLOR } from '@/data/themes'
 import EmptyState from '@/components/shared/EmptyState'
 
-// Numeric score for each emotion label (for y-axis ordering)
 const EMOTION_SCORE = {
     joy:      7,
     surprise: 6,
@@ -29,27 +24,22 @@ const EMOTION_SCORE = {
     anger:    1,
 }
 
-/**
- * Transform raw journal_entries into chart data points.
- *
- * @param {object[]} entries
- * @returns {object[]}  { date, score, emotion, color }
- */
+const STROKE = '#6D28D9'
+
 function buildChartData(entries) {
     return entries.map(entry => ({
         date:    new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         score:   EMOTION_SCORE[entry.emotion_label] ?? 4,
         emotion: entry.emotion_label ?? 'neutral',
-        color:   EMOTION_COLOR[entry.emotion_label] ?? '#9CA3AF',
+        color:   EMOTION_COLOR[entry.emotion_label] ?? '#64748B',
     }))
 }
 
-// Custom tooltip component
 function CustomTooltip({ active, payload, label }) {
     if (!active || !payload?.length) return null
     const d = payload[0].payload
     return (
-        <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs shadow-md">
+        <div className="bg-card border border-border rounded-xl px-3 py-2 text-xs flat-card">
             <p className="text-muted-foreground mb-0.5">{label}</p>
             <p className="font-semibold capitalize" style={{ color: d.color }}>
                 {d.emotion}
@@ -63,7 +53,7 @@ export default function MoodTimeline({ entries = [] }) {
         return (
             <EmptyState
                 title="No entries yet"
-                description="Your mood timeline will appear here after your first entry."
+                description="Your mood timeline appears after your first journal entry."
             />
         )
     }
@@ -71,41 +61,37 @@ export default function MoodTimeline({ entries = [] }) {
     const data = buildChartData(entries)
 
     return (
-        <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
-                <defs>
-                    <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor="#F59E0B" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}    />
-                    </linearGradient>
-                </defs>
+        <div className="w-full min-h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={data} margin={{ top: 12, right: 12, bottom: 0, left: -16 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
 
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.22 0 0)" vertical={false} />
+                    <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 11, fill: '#64748B', fontFamily: 'var(--font-sans)' }}
+                        axisLine={false}
+                        tickLine={false}
+                        interval="preserveStartEnd"
+                    />
+                    <YAxis
+                        domain={[1, 7]}
+                        hide
+                    />
 
-                <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10, fill: 'oklch(0.55 0 0)', fontFamily: 'monospace' }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval="preserveStartEnd"
-                />
-                <YAxis
-                    domain={[1, 7]}
-                    hide
-                />
+                    <RechartsTooltip content={<CustomTooltip />} />
 
-                <RechartsTooltip content={<CustomTooltip />} />
-
-                <Area
-                    type="monotone"
-                    dataKey="score"
-                    stroke="#F59E0B"
-                    strokeWidth={2}
-                    fill="url(#moodGrad)"
-                    dot={{ r: 3, fill: '#F59E0B', strokeWidth: 0 }}
-                    activeDot={{ r: 5, fill: '#F59E0B' }}
-                />
-            </AreaChart>
-        </ResponsiveContainer>
+                    <Area
+                        type="monotone"
+                        dataKey="score"
+                        stroke={STROKE}
+                        strokeWidth={2.5}
+                        fill={STROKE}
+                        fillOpacity={0.12}
+                        dot={{ r: 4, fill: STROKE, strokeWidth: 0 }}
+                        activeDot={{ r: 6, fill: STROKE }}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
+        </div>
     )
 }

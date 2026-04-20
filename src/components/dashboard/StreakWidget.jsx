@@ -64,7 +64,7 @@ export default function StreakWidget({ streakData, onFreezeUsed }) {
     }
 
     return (
-        <Card className="shadow-brutal-muted">
+        <Card className="rounded-2xl border border-border flat-card">
             <CardHeader className="pb-3">
                 <CardTitle className="font-heading text-sm flex items-center justify-between">
                     <span>Writing Streak</span>
@@ -122,24 +122,14 @@ export default function StreakWidget({ streakData, onFreezeUsed }) {
                         </p>
                         <div className="flex items-center gap-1.5">
                             <p className="font-heading text-xl font-semibold">{freezes}</p>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-6 px-2 text-[10px] font-mono-label"
-                                        onClick={handleActivateFreeze}
-                                        disabled={freezes <= 0 || freezing}
-                                    >
-                                        {freezing ? '...' : '◆ use'}
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom">
-                                    <p className="text-xs">
-                                        Protect your streak for a missed day
-                                    </p>
-                                </TooltipContent>
-                            </Tooltip>
+                            <button
+                                className="inline-flex h-6 px-2 text-[10px] font-mono-label items-center justify-center rounded-md border border-border bg-background hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                onClick={handleActivateFreeze}
+                                disabled={freezes <= 0 || freezing}
+                                title="Protect your streak for a missed day"
+                            >
+                                {freezing ? '...' : '◆ use'}
+                            </button>
                         </div>
                     </div>
                 </div>

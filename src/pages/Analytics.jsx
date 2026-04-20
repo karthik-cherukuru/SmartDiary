@@ -24,6 +24,59 @@ import CalendarHeatmap from '@/components/analytics/CalendarHeatmap'
 
 import { useAuth }        from '@/context/AuthContext'
 import { getAllEntries }   from '@/services/journalService'
+import { EMOTION_COLOR } from '@/data/themes'
+
+/**
+ * Highlight stats so the analytics page feels complete when data exists.
+ */
+function AnalyticsSummary({ entries }) {
+    if (!entries?.length) return null
+
+    const counts = {}
+    for (const e of entries) {
+        const label = e.emotion_label ?? 'neutral'
+        counts[label] = (counts[label] ?? 0) + 1
+    }
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+    const now = new Date()
+    const weekAgo = new Date(now.getTime() - 7 * 86400000)
+    const thisWeek = entries.filter(e => new Date(e.created_at) >= weekAgo).length
+
+    const color = EMOTION_COLOR[top[0]] ?? '#64748B'
+
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <Card className="rounded-2xl border border-border flat-card">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total entries</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="font-heading text-4xl font-bold tabular-nums">{entries.length}</p>
+                </CardContent>
+            </Card>
+            <Card className="rounded-2xl border border-border flat-card">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Most common tone</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="font-heading text-2xl font-semibold capitalize" style={{ color }}>
+                        {top[0]}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{top[1]} entries</p>
+                </CardContent>
+            </Card>
+            <Card className="rounded-2xl border border-border flat-card">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Last 7 days</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="font-heading text-4xl font-bold tabular-nums">{thisWeek}</p>
+                    <p className="text-xs text-muted-foreground mt-1">entries logged</p>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}
 
 export default function Analytics() {
     const { user } = useAuth()
@@ -47,12 +100,14 @@ export default function Analytics() {
             <Navbar />
 
             <main className="mx-auto max-w-5xl px-4 sm:px-6 py-8">
-                <header className="mb-8">
-                    <h1 className="font-heading text-2xl font-bold">Analytics</h1>
-                    <p className="text-muted-foreground text-sm mt-1">
+                <header className="mb-10">
+                    <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">Analytics</h1>
+                    <p className="text-muted-foreground text-base mt-2">
                         Your emotional patterns over time — {entries.length} {entries.length === 1 ? 'entry' : 'entries'} recorded.
                     </p>
                 </header>
+
+                {!loading && <AnalyticsSummary entries={entries} />}
 
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -63,18 +118,18 @@ export default function Analytics() {
                 ) : (
                     <Tabs defaultValue="timeline" className="space-y-6">
                         {/* Tab switcher */}
-                        <TabsList className="grid w-full grid-cols-4 max-w-md">
-                            <TabsTrigger value="timeline"  className="font-mono-label text-xs">Timeline</TabsTrigger>
-                            <TabsTrigger value="frequency" className="font-mono-label text-xs">Frequency</TabsTrigger>
-                            <TabsTrigger value="balance"   className="font-mono-label text-xs">Balance</TabsTrigger>
-                            <TabsTrigger value="calendar"  className="font-mono-label text-xs">Calendar</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-3xl h-auto sm:h-11 gap-1">
+                            <TabsTrigger value="timeline"  className="font-mono-label text-xs py-2.5">Timeline</TabsTrigger>
+                            <TabsTrigger value="frequency" className="font-mono-label text-xs py-2.5">Frequency</TabsTrigger>
+                            <TabsTrigger value="balance"   className="font-mono-label text-xs py-2.5">Balance</TabsTrigger>
+                            <TabsTrigger value="calendar"  className="font-mono-label text-xs py-2.5">Calendar</TabsTrigger>
                         </TabsList>
 
                         {/* ---- Timeline tab ---- */}
                         <TabsContent value="timeline">
-                            <Card className="shadow-brutal-muted">
+                            <Card className="rounded-2xl border border-border flat-card">
                                 <CardHeader>
-                                    <CardTitle className="font-heading text-base">Mood over time</CardTitle>
+                                    <CardTitle className="font-heading text-lg sm:text-xl">Mood over time</CardTitle>
                                     <CardDescription className="text-xs">
                                         Each point represents one entry. Higher = more positive.
                                     </CardDescription>
@@ -87,9 +142,9 @@ export default function Analytics() {
 
                         {/* ---- Frequency tab ---- */}
                         <TabsContent value="frequency">
-                            <Card className="shadow-brutal-muted">
+                            <Card className="rounded-2xl border border-border flat-card">
                                 <CardHeader>
-                                    <CardTitle className="font-heading text-base">Emotion frequency</CardTitle>
+                                    <CardTitle className="font-heading text-lg sm:text-xl">Emotion frequency</CardTitle>
                                     <CardDescription className="text-xs">
                                         Which emotions appear most in your writing.
                                     </CardDescription>
@@ -102,9 +157,9 @@ export default function Analytics() {
 
                         {/* ---- Balance tab ---- */}
                         <TabsContent value="balance">
-                            <Card className="shadow-brutal-muted">
+                            <Card className="rounded-2xl border border-border flat-card">
                                 <CardHeader>
-                                    <CardTitle className="font-heading text-base">Weekly balance</CardTitle>
+                                    <CardTitle className="font-heading text-lg sm:text-xl">Weekly balance</CardTitle>
                                     <CardDescription className="text-xs">
                                         Positive, neutral, and negative days per week.
                                     </CardDescription>
@@ -117,9 +172,9 @@ export default function Analytics() {
 
                         {/* ---- Calendar tab ---- */}
                         <TabsContent value="calendar">
-                            <Card className="shadow-brutal-muted">
+                            <Card className="rounded-2xl border border-border flat-card">
                                 <CardHeader>
-                                    <CardTitle className="font-heading text-base">Activity calendar</CardTitle>
+                                    <CardTitle className="font-heading text-lg sm:text-xl">Activity calendar</CardTitle>
                                     <CardDescription className="text-xs">
                                         Last 16 weeks — each square colored by the day's detected emotion.
                                     </CardDescription>

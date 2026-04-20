@@ -103,7 +103,7 @@ export default function CalendarHeatmap({ entries = [] }) {
                         x={0}
                         y={20 + i * (CELL_SIZE + CELL_GAP) + CELL_SIZE / 2 + 4}
                         fontSize={9}
-                        fill="oklch(0.55 0 0)"
+                        fill="#64748B"
                         fontFamily="monospace"
                     >
                         {i % 2 === 1 ? label : ''}
@@ -128,15 +128,15 @@ export default function CalendarHeatmap({ entries = [] }) {
                                 rx={2}
                                 fill={
                                     isFuture
-                                        ? 'oklch(0.10 0 0)'
+                                        ? '#F3F4F6'
                                         : color
                                         ? `${color}CC`
-                                        : 'oklch(0.16 0 0)'
+                                        : '#E5E7EB'
                                 }
                                 stroke={
                                     color
                                         ? `${color}55`
-                                        : 'oklch(0.22 0 0)'
+                                        : '#D1D5DB'
                                 }
                                 strokeWidth={0.5}
                                 opacity={isFuture ? 0.3 : 1}

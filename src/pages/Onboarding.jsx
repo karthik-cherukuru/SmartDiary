@@ -164,7 +164,7 @@ export default function Onboarding() {
                             animate="center"
                             exit="exit"
                         >
-                            <Card className="shadow-brutal-muted">
+                            <Card className="rounded-2xl border border-border flat-card">
                                 <CardHeader>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="text-primary font-mono-label">01</span>
@@ -192,7 +192,7 @@ export default function Onboarding() {
                                     </div>
 
                                     <Button
-                                        className="w-full shadow-brutal"
+                                        className="w-full rounded-full border border-border"
                                         onClick={handleNameNext}
                                     >
                                         Continue →
@@ -210,7 +210,7 @@ export default function Onboarding() {
                             animate="center"
                             exit="exit"
                         >
-                            <Card className="shadow-brutal-muted">
+                            <Card className="rounded-2xl border border-border flat-card">
                                 <CardHeader>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="text-primary font-mono-label">02</span>
@@ -262,7 +262,7 @@ export default function Onboarding() {
                                         </Button>
 
                                         <Button
-                                            className="flex-1 shadow-brutal"
+                                            className="flex-1 rounded-full border border-border"
                                             onClick={handleFinish}
                                             disabled={saving}
                                         >

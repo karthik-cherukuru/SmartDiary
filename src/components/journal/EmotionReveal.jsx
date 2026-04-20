@@ -1,53 +1,59 @@
 /**
- * EmotionReveal — slides up after a journal entry is saved to show
- * the detected emotion label and confidence score.
- *
- * Uses Framer Motion spring animation.
+ * EmotionReveal — detected emotion summary after save (flat, icon-based).
  */
 import { motion } from 'framer-motion'
+import {
+    Smile,
+    Zap,
+    Flame,
+    Cloud,
+    ThumbsDown,
+    HeartCrack,
+    Circle,
+} from 'lucide-react'
+
 import MoodBadge  from '@/components/shared/MoodBadge'
 import { EMOTION_COLOR } from '@/data/themes'
+
+const EMOTION_ICON = {
+    joy:      Smile,
+    surprise: Zap,
+    anger:    Flame,
+    fear:     Cloud,
+    disgust:  ThumbsDown,
+    sadness:  HeartCrack,
+    neutral:  Circle,
+}
 
 export default function EmotionReveal({ emotion, confidence, onContinue }) {
     if (!emotion) return null
 
-    const color      = EMOTION_COLOR[emotion] ?? '#9CA3AF'
+    const color   = EMOTION_COLOR[emotion] ?? '#64748B'
     const percentage = confidence != null
         ? `${Math.round(confidence * 100)}%`
         : null
 
+    const Icon = EMOTION_ICON[emotion] ?? Circle
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: 32, scale: 0.96 }}
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 24 }}
-            className="flex flex-col items-center gap-4 py-10 text-center"
+            transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+            className="flex flex-col items-center gap-6 py-12 text-center max-w-md mx-auto px-4"
         >
-            {/* Glowing circle */}
             <div
-                className="w-24 h-24 rounded-full flex items-center justify-center"
-                style={{
-                    backgroundColor: `${color}18`,
-                    border:          `1px solid ${color}44`,
-                    boxShadow:       `0 0 40px ${color}22`,
-                }}
+                className="flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-border bg-card flat-card"
+                style={{ borderColor: `${color}55` }}
             >
-                <span className="text-3xl" aria-hidden="true">
-                    {emotion === 'joy'      && '✦'}
-                    {emotion === 'surprise' && '◈'}
-                    {emotion === 'anger'    && '▲'}
-                    {emotion === 'fear'     && '◆'}
-                    {emotion === 'disgust'  && '⬟'}
-                    {emotion === 'sadness'  && '◇'}
-                    {emotion === 'neutral'  && '○'}
-                </span>
+                <Icon className="h-11 w-11" style={{ color }} aria-hidden />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
                 <p className="font-mono-label text-xs text-muted-foreground uppercase tracking-widest">
                     Detected emotion
                 </p>
-                <MoodBadge emotion={emotion} className="text-sm px-3 py-1" />
+                <MoodBadge emotion={emotion} className="text-sm px-4 py-1.5" />
                 {percentage && (
                     <p className="font-mono-label text-[11px] text-muted-foreground">
                         {percentage} confidence
@@ -55,12 +61,12 @@ export default function EmotionReveal({ emotion, confidence, onContinue }) {
                 )}
             </div>
 
-            {/* Action */}
             <button
+                type="button"
                 onClick={onContinue}
-                className="font-mono-label text-xs text-primary hover:underline mt-2 focus:outline-none"
+                className="font-mono-label text-sm text-primary hover:underline mt-2 focus:outline-none focus:underline"
             >
-                Return to dashboard →
+                Return to dashboard
             </button>
         </motion.div>
     )

@@ -23,6 +23,7 @@ export function buildSystemPrompt(entryContent, emotion) {
         'You are a warm, compassionate journaling companion called Sage.',
         'Your role is to help the user process their feelings through gentle, thoughtful questions and reflective responses.',
         'You do NOT give advice or diagnoses. You are NOT a therapist.',
+        'Only refer to facts the user has already shared in their journal entry or in this thread — do not invent details or assume events they have not mentioned.',
         'Speak calmly, warmly, and without judgment. Keep responses concise — 2–4 sentences.',
         '',
         `The user just wrote this journal entry (detected emotion: ${emotion}):`,
@@ -96,6 +97,22 @@ export async function saveMessage(userId, entryId, role, content) {
  * @param {string} entryId
  * @returns {Promise<object[]>}
  */
+/**
+ * Stable ordering: timestamp first, then id when created in the same millisecond.
+ *
+ * @param {object[]} rows
+ */
+export function sortChatMessages(rows) {
+    return [...(rows ?? [])].sort((a, b) => {
+        const ta = new Date(a.created_at).getTime()
+        const tb = new Date(b.created_at).getTime()
+        if (ta !== tb) return ta - tb
+        const ia = String(a.id ?? '')
+        const ib = String(b.id ?? '')
+        return ia.localeCompare(ib)
+    })
+}
+
 export async function getMessages(userId, entryId) {
     const { data, error } = await supabase
         .from('chat_messages')
@@ -103,11 +120,26 @@ export async function getMessages(userId, entryId) {
         .eq('user_id', userId)
         .eq('entry_id', entryId)
         .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
 
     if (error) {
         console.error('[chatbotService] getMessages error:', error.message)
         throw new Error(error.message)
     }
 
-    return data ?? []
+    return sortChatMessages(data ?? [])
+}
+
+/**
+ * Persist every message in order after a draft journal session is saved.
+ *
+ * @param {string} userId
+ * @param {string} entryId
+ * @param {Array<{ role: string, content: string }>} messages — no system rows
+ */
+export async function saveMessageSequence(userId, entryId, messages) {
+    for (const m of messages) {
+        if (m.role !== 'user' && m.role !== 'assistant') continue
+        await saveMessage(userId, entryId, m.role, m.content)
+    }
 }

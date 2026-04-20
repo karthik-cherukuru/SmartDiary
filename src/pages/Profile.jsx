@@ -194,7 +194,7 @@ export default function Profile() {
                 </header>
 
                 {/* ---- Identity card ---- */}
-                <Card className="shadow-brutal-muted">
+                <Card className="rounded-2xl border border-border flat-card">
                     <CardHeader>
                         <CardTitle className="font-heading text-base">Identity</CardTitle>
                         <CardDescription className="text-xs">
@@ -248,7 +248,7 @@ export default function Profile() {
                         <Button
                             onClick={handleSaveProfile}
                             disabled={savingProfile}
-                            className="shadow-brutal"
+                            className="rounded-full border border-border"
                         >
                             {savingProfile
                                 ? <><Spinner className="h-4 w-4 mr-2" /> Saving…</>
@@ -259,7 +259,7 @@ export default function Profile() {
                 </Card>
 
                 {/* ---- Lifetime stats ---- */}
-                <Card className="shadow-brutal-muted">
+                <Card className="rounded-2xl border border-border flat-card">
                     <CardHeader>
                         <CardTitle className="font-heading text-base">Lifetime stats</CardTitle>
                     </CardHeader>
@@ -292,7 +292,7 @@ export default function Profile() {
                 </Card>
 
                 {/* ---- Danger zone ---- */}
-                <Card className="border-destructive/30 shadow-brutal-muted">
+                <Card className="border-destructive/30 rounded-2xl border border-border flat-card">
                     <CardHeader>
                         <CardTitle className="font-heading text-base text-destructive">
                             Danger zone

@@ -12,7 +12,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   THEME TOKENS — shadcn base (dark-only app, .dark on <html>)
+   THEME TOKENS — shadcn base (light-first app)
    ============================================================ */
 @theme inline {
     /* Typography */
@@ -49,77 +49,70 @@
 }
 
 /* ============================================================
-   SMART DIARY BASE PALETTE — always dark
+   SMART DIARY — flat white theme (no gradients in CSS)
    ============================================================ */
 :root {
-    /* Near-black dark base */
-    --background:           oklch(0.08 0 0);
-    --foreground:           oklch(0.92 0 0);
+    /* Page wash + crisp card surfaces */
+    --background:           #f5f4f3;
+    --foreground:           oklch(0.21 0.02 280);
 
-    /* Card surfaces (slightly lighter than bg) */
-    --card:                 oklch(0.12 0 0);
-    --card-foreground:      oklch(0.92 0 0);
+    --card:                 #ffffff;
+    --card-foreground:      oklch(0.21 0.02 280);
 
-    /* Popover */
-    --popover:              oklch(0.12 0 0);
-    --popover-foreground:   oklch(0.92 0 0);
+    --popover:              #ffffff;
+    --popover-foreground:   oklch(0.21 0.02 280);
 
-    /* Primary — amber-gold accent */
-    --primary:              oklch(0.78 0.18 85);
-    --primary-foreground:   oklch(0.08 0 0);
+    /* Brand: violet (replaces amber / yellow primary) */
+    --primary:              oklch(0.48 0.22 290);
+    --primary-foreground:   oklch(0.99 0 0);
 
-    /* Secondary */
-    --secondary:            oklch(0.17 0 0);
-    --secondary-foreground: oklch(0.92 0 0);
+    --secondary:            oklch(0.96 0.01 280);
+    --secondary-foreground: oklch(0.21 0.02 280);
 
-    /* Muted */
-    --muted:                oklch(0.16 0 0);
-    --muted-foreground:     oklch(0.55 0 0);
+    --muted:                oklch(0.96 0.005 280);
+    --muted-foreground:     oklch(0.45 0.02 280);
 
-    /* Accent — same amber-gold */
-    --accent:               oklch(0.78 0.18 85);
-    --accent-foreground:    oklch(0.08 0 0);
+    --accent:               oklch(0.94 0.03 290);
+    --accent-foreground:    oklch(0.31 0.12 290);
 
-    /* Destructive */
-    --destructive:          oklch(0.62 0.22 25);
+    --destructive:          oklch(0.52 0.2 25);
 
-    /* Borders & inputs */
-    --border:               oklch(0.22 0 0);
-    --input:                oklch(0.20 0 0);
-    --ring:                 oklch(0.78 0.18 85);
+    /* Slightly deeper borders than default zinc */
+    --border:               #c9c5c1;
+    --input:                #e8e6e3;
+    --ring:                 oklch(0.48 0.22 290);
 
-    /* Base radius */
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* ---- Emotion dynamic theme vars (ThemeContext writes these) ---- */
-    --theme-bg-primary:   oklch(0.08 0 0);
-    --theme-bg-secondary: oklch(0.12 0 0);
-    --theme-accent:       oklch(0.78 0.18 85);
-    --theme-text-primary: oklch(0.92 0 0);
-    --theme-text-muted:   oklch(0.55 0 0);
-    --theme-border:       oklch(0.22 0 0);
+    /* Emotion dynamic theme vars (ThemeContext writes these) */
+    --theme-bg-primary:   #f5f4f3;
+    --theme-bg-secondary: #ffffff;
+    --theme-accent:       oklch(0.48 0.22 290);
+    --theme-text-primary: oklch(0.21 0.02 280);
+    --theme-text-muted:   oklch(0.45 0.02 280);
+    --theme-border:       #c9c5c1;
 }
 
-/* Dark variant — mirrors :root since this is dark-only */
+/* `.dark` kept in sync for shadcn components — app uses light `:root` */
 .dark {
-    --background:           oklch(0.08 0 0);
-    --foreground:           oklch(0.92 0 0);
-    --card:                 oklch(0.12 0 0);
-    --card-foreground:      oklch(0.92 0 0);
-    --popover:              oklch(0.12 0 0);
-    --popover-foreground:   oklch(0.92 0 0);
-    --primary:              oklch(0.78 0.18 85);
-    --primary-foreground:   oklch(0.08 0 0);
-    --secondary:            oklch(0.17 0 0);
-    --secondary-foreground: oklch(0.92 0 0);
-    --muted:                oklch(0.16 0 0);
-    --muted-foreground:     oklch(0.55 0 0);
-    --accent:               oklch(0.78 0.18 85);
-    --accent-foreground:    oklch(0.08 0 0);
-    --destructive:          oklch(0.62 0.22 25);
-    --border:               oklch(0.22 0 0);
-    --input:                oklch(0.20 0 0);
-    --ring:                 oklch(0.78 0.18 85);
+    --background:           #f5f4f3;
+    --foreground:           oklch(0.21 0.02 280);
+    --card:                 #ffffff;
+    --card-foreground:      oklch(0.21 0.02 280);
+    --popover:              #ffffff;
+    --popover-foreground:   oklch(0.21 0.02 280);
+    --primary:              oklch(0.48 0.22 290);
+    --primary-foreground:   oklch(0.99 0 0);
+    --secondary:            oklch(0.96 0.01 280);
+    --secondary-foreground: oklch(0.21 0.02 280);
+    --muted:                oklch(0.96 0.005 280);
+    --muted-foreground:     oklch(0.45 0.02 280);
+    --accent:               oklch(0.94 0.03 290);
+    --accent-foreground:    oklch(0.31 0.12 290);
+    --destructive:          oklch(0.52 0.2 25);
+    --border:               #c9c5c1;
+    --input:                #e8e6e3;
+    --ring:                 oklch(0.48 0.22 290);
 }
 
 /* ============================================================
@@ -130,11 +123,10 @@
         @apply border-border outline-ring/50;
     }
 
-    /* Smooth CSS variable transitions for emotion theme switching */
     html {
         transition:
-            background-color 0.6s ease,
-            color 0.6s ease;
+            background-color 0.45s ease,
+            color 0.45s ease;
     }
 
     body {
@@ -150,20 +142,15 @@
 }
 
 /* ============================================================
-   UTILITY CLASSES — Brutalist shadows, emotion badge colors
+   UTILITIES — flat cards, mono labels
    ============================================================ */
 @layer utilities {
-    /* Hard-offset brutalist shadow (amber) */
-    .shadow-brutal {
-        box-shadow: 4px 4px 0px oklch(0.78 0.18 85);
+    /* Flat bordered card look (no drop shadow) */
+    .flat-card {
+        box-shadow: none;
+        border: 1px solid var(--border);
     }
 
-    /* Hard-offset shadow (muted) */
-    .shadow-brutal-muted {
-        box-shadow: 4px 4px 0px oklch(0.22 0 0);
-    }
-
-    /* Mono label text — Geist Mono feel */
     .font-mono-label {
         font-family: 'Geist Variable', ui-monospace, monospace;
         font-size: 0.75rem;

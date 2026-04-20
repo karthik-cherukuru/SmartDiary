@@ -28,6 +28,8 @@ import Journal     from '@/pages/Journal'
 import JournalView from '@/pages/JournalView'
 import Analytics   from '@/pages/Analytics'
 import Profile     from '@/pages/Profile'
+import About       from '@/pages/About'
+import Contact     from '@/pages/Contact'
 import NotFound    from '@/pages/NotFound'
 
 /**
@@ -119,6 +121,28 @@ function AnimatedRoutes() {
                     }
                 />
 
+                <Route
+                    path="/about"
+                    element={
+                        <ProtectedRoute>
+                            <PageTransition>
+                                <About />
+                            </PageTransition>
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/contact"
+                    element={
+                        <ProtectedRoute>
+                            <PageTransition>
+                                <Contact />
+                            </PageTransition>
+                        </ProtectedRoute>
+                    }
+                />
+
                 {/* 404 fallback */}
                 <Route
                     path="*"
@@ -143,7 +167,7 @@ export default function App() {
                         <AnimatedRoutes />
                         {/* Global toast container — dark theme, top-center */}
                         <Toaster
-                            theme="dark"
+                            theme="light"
                             position="top-center"
                             richColors
                             expand={false}

@@ -43,7 +43,7 @@ function CustomTooltip({ active, payload }) {
     if (!active || !payload?.length) return null
     const d = payload[0].payload
     return (
-        <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs shadow-md">
+        <div className="bg-card border border-border rounded-xl px-3 py-2 text-xs flat-card">
             <p className="font-semibold capitalize" style={{ color: d.color }}>{d.name}</p>
             <p className="text-muted-foreground">{d.value} {d.value === 1 ? 'entry' : 'entries'}</p>
         </div>
@@ -64,7 +64,7 @@ export default function EmotionDonut({ entries = [] }) {
 
     return (
         <div className="flex flex-col items-center gap-6">
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                     <Pie
                         data={data}

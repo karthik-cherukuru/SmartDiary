@@ -6,6 +6,12 @@
  *  - Fetch the matching row from `profiles` when a session becomes available.
  *  - Expose signInWithGoogle() and signOut() helpers.
  *  - Provide a `loading` flag so protected routes can wait before redirecting.
+ *
+ * IMPORTANT (refresh / deadlock):
+ *  Do NOT `await supabase.from(...)` (or any other Supabase network call) inside
+ *  the onAuthStateChange callback. GoTrue holds an internal lock while that
+ *  callback runs; awaiting PostgREST there deadlocks the client, so queries like
+ *  getEntries() never complete after a full page reload.
  */
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/config/supabase'
@@ -37,33 +43,45 @@ export function AuthProvider({ children }) {
 
     // Initialize session on mount and subscribe to auth changes
     useEffect(() => {
-        // 1. Grab the current session immediately (avoids flash)
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (session?.user) {
-                setUser(session.user)
-                const profileData = await fetchProfile(session.user.id)
-                setProfile(profileData)
-            }
-            setLoading(false)
-        })
+        let mounted = true
 
-        // 2. Keep state in sync when auth state changes (sign-in, sign-out, token refresh)
+        /**
+         * Load profile AFTER the auth callback returns so GoTrue can release its lock.
+         */
+        const scheduleProfileLoad = (userId) => {
+            queueMicrotask(() => {
+                if (!mounted) return
+                fetchProfile(userId)
+                    .then(data => {
+                        if (mounted) setProfile(data)
+                    })
+                    .catch(err => {
+                        console.error('[AuthContext] Profile fetch error:', err)
+                    })
+            })
+        }
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (_event, session) => {
+            (event, session) => {
+                if (!mounted) return
+
                 if (session?.user) {
                     setUser(session.user)
-                    const profileData = await fetchProfile(session.user.id)
-                    setProfile(profileData)
+                    scheduleProfileLoad(session.user.id)
                 } else {
                     setUser(null)
                     setProfile(null)
                 }
+
+                // Always unblock the UI once GoTrue reports a state — never await DB here.
                 setLoading(false)
             }
         )
 
-        // Cleanup subscription on unmount
-        return () => subscription.unsubscribe()
+        return () => {
+            mounted = false
+            subscription.unsubscribe()
+        }
     }, [])
 
     // Trigger Google OAuth — Supabase redirects back to the app automatically

@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 
+import { Sparkles, Palette, Flame, Bot } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 
@@ -41,10 +43,10 @@ const itemVariants = {
 
 // Decorative feature pill items
 const FEATURES = [
-    { icon: '◈', label: 'Emotion detection' },
-    { icon: '▲', label: 'Adaptive themes' },
-    { icon: '✦', label: 'Streak tracking' },
-    { icon: '◆', label: 'AI companion' },
+    { Icon: Sparkles, label: 'Emotion detection' },
+    { Icon: Palette, label: 'Adaptive themes' },
+    { Icon: Flame, label: 'Streak tracking' },
+    { Icon: Bot, label: 'AI companion' },
 ]
 
 export default function Landing() {
@@ -73,37 +75,17 @@ export default function Landing() {
     return (
         <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4">
 
-            {/* Background texture — subtle grid */}
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 opacity-[0.03]"
-                style={{
-                    backgroundImage:
-                        'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)',
-                    backgroundSize: '40px 40px',
-                }}
-            />
-
-            {/* Amber glow spot */}
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full"
-                style={{
-                    background: 'radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%)',
-                }}
-            />
-
             {/* Main content */}
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="relative z-10 flex flex-col items-center gap-6 text-center max-w-lg"
+                className="relative z-10 flex flex-col items-center gap-8 sm:gap-10 text-center max-w-2xl px-2"
             >
                 {/* Brand mark */}
-                <motion.div variants={itemVariants} className="flex items-center gap-2">
-                    <span className="text-primary text-2xl leading-none">✦</span>
-                    <span className="font-mono-label text-muted-foreground tracking-widest text-xs uppercase">
+                <motion.div variants={itemVariants} className="flex items-center gap-3">
+                    <Sparkles className="h-9 w-9 text-primary sm:h-10 sm:w-10" aria-hidden />
+                    <span className="font-mono-label text-muted-foreground tracking-widest text-sm uppercase sm:text-base">
                         Smart Diary
                     </span>
                 </motion.div>
@@ -111,7 +93,7 @@ export default function Landing() {
                 {/* Headline */}
                 <motion.h1
                     variants={itemVariants}
-                    className="font-heading text-5xl font-bold tracking-tight text-foreground leading-[1.08]"
+                    className="font-heading text-6xl font-bold tracking-tight text-foreground leading-[1.06] sm:text-7xl md:text-8xl"
                 >
                     Your journal<br />
                     <span className="text-primary">feels you.</span>
@@ -120,7 +102,7 @@ export default function Landing() {
                 {/* Tagline */}
                 <motion.p
                     variants={itemVariants}
-                    className="text-muted-foreground text-base leading-relaxed max-w-sm"
+                    className="text-muted-foreground text-lg leading-relaxed max-w-xl sm:text-xl sm:leading-relaxed"
                 >
                     Write freely. Smart Diary detects your emotion, adapts its colors to
                     match your mood, and offers a compassionate AI companion to help you
@@ -130,28 +112,31 @@ export default function Landing() {
                 {/* Feature pills */}
                 <motion.div
                     variants={itemVariants}
-                    className="flex flex-wrap justify-center gap-2"
+                    className="flex flex-wrap justify-center gap-2.5 sm:gap-3"
                 >
-                    {FEATURES.map(f => (
-                        <span
-                            key={f.label}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1 font-mono-label text-muted-foreground"
-                        >
-                            <span className="text-primary text-[10px]">{f.icon}</span>
-                            {f.label}
-                        </span>
-                    ))}
+                    {FEATURES.map(f => {
+                        const Icon = f.Icon
+                        return (
+                            <span
+                                key={f.label}
+                                className="inline-flex items-center gap-2.5 rounded-full border border-border bg-secondary px-4 py-2.5 font-mono-label text-sm text-muted-foreground sm:px-5 sm:py-3 sm:text-base"
+                            >
+                                <Icon className="h-4 w-4 text-primary shrink-0 sm:h-5 sm:w-5" aria-hidden />
+                                {f.label}
+                            </span>
+                        )
+                    })}
                 </motion.div>
 
                 {/* CTA */}
-                <motion.div variants={itemVariants} className="flex flex-col items-center gap-3">
+                <motion.div variants={itemVariants} className="flex flex-col items-center gap-4">
                     <Button
                         size="lg"
                         onClick={handleGoogleSignIn}
-                        className="shadow-brutal font-semibold px-8 gap-3 h-12 text-sm"
+                        className="font-semibold px-10 gap-3 h-14 text-base rounded-60px sm:h-[3.75rem] sm:text-lg"
                     >
                         {/* Google SVG icon */}
-                        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 18 18" className="shrink-0" aria-hidden="true">
                             <path
                                 d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
                                 fill="#4285F4"
@@ -172,7 +157,7 @@ export default function Landing() {
                         Continue with Google
                     </Button>
 
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-sm text-muted-foreground sm:text-base max-w-md leading-snug">
                         Your entries are private. Only you can access them.
                     </p>
                 </motion.div>
@@ -182,7 +167,7 @@ export default function Landing() {
             <motion.footer
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, transition: { delay: 0.8, duration: 0.4 } }}
-                className="absolute bottom-6 text-[11px] text-muted-foreground font-mono-label"
+                className="absolute bottom-6 text-sm text-muted-foreground font-mono-label sm:text-base px-4 text-center"
             >
                 Smart Diary — Emotionally intelligent journaling
             </motion.footer>
