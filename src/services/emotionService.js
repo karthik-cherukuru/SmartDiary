@@ -53,6 +53,55 @@ export async function classifyEmotion(text) {
 }
 
 /**
+ * Classify emotion + generate associative & corrective lines (Ollama via backend).
+ *
+ * @param {string} text
+ * @returns {Promise<{ emotion: string, confidence: number, associative_quote: string, corrective_quote: string }>}
+ */
+export async function analyzeJournalInsights(text) {
+    if (!EMOTION_API_URL) {
+        throw new Error(
+            'VITE_EMOTION_API_URL is not set. ' +
+                'Start the backend server and set the tunnel URL in .env.local'
+        )
+    }
+
+    const trimmed = text?.trim()
+    if (!trimmed) {
+        return {
+            emotion:           'neutral',
+            confidence:        1.0,
+            associative_quote: 'Showing up to write is already meaningful.',
+            corrective_quote:  'Small, steady steps often beat perfect plans.',
+        }
+    }
+
+    const response = await fetch(`${EMOTION_API_URL}/journal-insights`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text: trimmed }),
+    })
+
+    if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Journal insights API error ${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.emotion || typeof data.confidence !== 'number') {
+        throw new Error('Unexpected response from journal-insights')
+    }
+
+    return {
+        emotion:           data.emotion,
+        confidence:        data.confidence,
+        associative_quote: data.associative_quote ?? '',
+        corrective_quote:  data.corrective_quote ?? '',
+    }
+}
+
+/**
  * Health-check the backend server.
  * Returns true if reachable, false otherwise.
  *

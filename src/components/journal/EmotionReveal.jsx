@@ -1,5 +1,5 @@
 /**
- * EmotionReveal — detected emotion summary after save (flat, icon-based).
+ * EmotionReveal — detected emotion + associative (supportive) line after save.
  */
 import { motion } from 'framer-motion'
 import {
@@ -25,7 +25,7 @@ const EMOTION_ICON = {
     neutral:  Circle,
 }
 
-export default function EmotionReveal({ emotion, confidence, onContinue }) {
+export default function EmotionReveal({ emotion, confidence, associativeQuote, onContinue }) {
     if (!emotion) return null
 
     const color   = EMOTION_COLOR[emotion] ?? '#64748B'
@@ -40,7 +40,7 @@ export default function EmotionReveal({ emotion, confidence, onContinue }) {
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-            className="flex flex-col items-center gap-6 py-12 text-center max-w-md mx-auto px-4"
+            className="flex flex-col items-center gap-6 py-12 text-center max-w-lg mx-auto px-4"
         >
             <div
                 className="flex h-24 w-24 items-center justify-center rounded-[1.75rem] border border-border bg-card flat-card"
@@ -60,6 +60,15 @@ export default function EmotionReveal({ emotion, confidence, onContinue }) {
                     </p>
                 )}
             </div>
+
+            {associativeQuote && (
+                <div className="w-full max-w-md rounded-2xl border border-border bg-secondary/40 px-5 py-4 text-left">
+                    <p className="font-mono-label text-[10px] text-muted-foreground uppercase tracking-wider mb-2">
+                        A word alongside you
+                    </p>
+                    <p className="text-base leading-relaxed text-foreground">{associativeQuote}</p>
+                </div>
+            )}
 
             <button
                 type="button"

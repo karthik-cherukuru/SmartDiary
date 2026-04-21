@@ -28,17 +28,20 @@ function countWords(text) {
  * @param {string} content         — raw plain-text entry
  * @param {string} emotionLabel    — one of the 7 emotion labels
  * @param {number} confidence      — 0–1 confidence score from classifier
+ * @param {{ associative?: string, corrective?: string }} [quotes] — optional Ollama lines
  * @returns {Promise<object>}      — the inserted row
  */
-export async function saveEntry(userId, content, emotionLabel, confidence) {
+export async function saveEntry(userId, content, emotionLabel, confidence, quotes = {}) {
     const { data, error } = await supabase
         .from('journal_entries')
         .insert({
-            user_id:          userId,
-            content:          content.trim(),
-            emotion_label:    emotionLabel,
-            confidence_score: confidence,
-            word_count:       countWords(content),
+            user_id:            userId,
+            content:            content.trim(),
+            emotion_label:      emotionLabel,
+            confidence_score:   confidence,
+            word_count:         countWords(content),
+            associative_quote:  quotes.associative ?? null,
+            corrective_quote:   quotes.corrective ?? null,
         })
         .select()
         .single()

@@ -26,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Badge } from '@/components/ui/badge'
 
 import { useAuth } from '@/context/AuthContext'
+import { useResolvedAvatarUrl } from '@/hooks/useResolvedAvatarUrl'
 import { getStreak } from '@/services/streakService'
 
 const NAV_LINKS = [
@@ -59,7 +60,8 @@ export default function Navbar() {
         }
     }
 
-    const avatarUrl = profile?.avatar_url ?? null
+    const avatarUrl   = profile?.avatar_url ?? null
+    const avatarSrc   = useResolvedAvatarUrl(avatarUrl) ?? avatarUrl
     const initials  = (profile?.display_name ?? user?.email ?? 'U')
         .slice(0, 2)
         .toUpperCase()
@@ -132,9 +134,9 @@ export default function Navbar() {
                                 aria-label="Open user menu"
                             >
                                 <Avatar className="h-9 w-9">
-                                    {avatarUrl && (
+                                    {avatarSrc && (
                                         <AvatarImage
-                                            src={avatarUrl}
+                                            src={avatarSrc}
                                             alt={profile?.display_name ?? 'User avatar'}
                                         />
                                     )}

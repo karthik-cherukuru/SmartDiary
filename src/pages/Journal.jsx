@@ -18,7 +18,7 @@ import ChatPanel     from '@/components/chatbot/ChatPanel'
 import { useAuth }  from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 
-import { classifyEmotion } from '@/services/emotionService'
+import { analyzeJournalInsights, classifyEmotion } from '@/services/emotionService'
 import { saveEntry }       from '@/services/journalService'
 import { updateStreak }    from '@/services/streakService'
 import { getEntries }      from '@/services/journalService'
@@ -51,14 +51,16 @@ export default function Journal() {
         sageMessagesRef.current = msgs
     }, [])
 
-    // Auto-grow composer height with content (ChatGPT-style)
+    /** Single-line starting height; grows only as content / new lines need space */
+    const LINE_MIN_PX = 44
+
     const adjustComposerHeight = useCallback(() => {
         const el = textareaRef.current
         if (!el) return
         el.style.height = 'auto'
         const maxPx = Math.round(window.innerHeight * 0.42)
         const next = Math.min(el.scrollHeight, maxPx)
-        el.style.height = `${Math.max(next, 52)}px`
+        el.style.height = `${Math.max(next, LINE_MIN_PX)}px`
     }, [])
 
     useEffect(() => {
@@ -90,10 +92,30 @@ export default function Journal() {
         setAnalyzing(true)
 
         try {
-            const { emotion, confidence } = await classifyEmotion(content)
+            let emotion
+            let confidence
+            let associative = ''
+            let corrective = ''
+
+            try {
+                const insights = await analyzeJournalInsights(content)
+                emotion = insights.emotion
+                confidence = insights.confidence
+                associative = insights.associative_quote || ''
+                corrective = insights.corrective_quote || ''
+            } catch (insightErr) {
+                console.warn('[Journal] journal-insights failed, using classify only:', insightErr.message)
+                const basic = await classifyEmotion(content)
+                emotion = basic.emotion
+                confidence = basic.confidence
+            }
+
             setAnalyzing(false)
 
-            const entry = await saveEntry(user.id, content, emotion, confidence)
+            const entry = await saveEntry(user.id, content, emotion, confidence, {
+                associative,
+                corrective,
+            })
 
             const draft = sageMessagesRef.current
             if (draft.length > 0) {
@@ -106,7 +128,14 @@ export default function Journal() {
 
             const { newStreak, isMilestone } = await updateStreak(user.id)
 
-            setSavedEntry({ emotion, confidence, id: entry.id, newStreak, isMilestone })
+            setSavedEntry({
+                emotion,
+                confidence,
+                id: entry.id,
+                newStreak,
+                isMilestone,
+                associativeQuote: associative,
+            })
 
         } catch (err) {
             console.error('[Journal] handleSave error:', err.message)
@@ -164,7 +193,7 @@ export default function Journal() {
                         }`}
                     >
                         {analyzing
-                            ? 'Analyzing…'
+                            ? 'Reflecting…'
                             : saving
                             ? 'Saving…'
                             : 'Save'}
@@ -204,14 +233,14 @@ export default function Journal() {
                                 <div className="flex items-center justify-center gap-3 mb-6">
                                     <Skeleton className="h-3 w-3 rounded-full" />
                                     <span className="font-mono-label text-xs text-muted-foreground animate-pulse">
-                                        Analyzing your words…
+                                        Listening to your words…
                                     </span>
                                 </div>
                             )}
 
                             <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
                                 <div
-                                    className="w-full rounded-[1.75rem] border border-border bg-card px-4 py-3 sm:px-6 sm:py-4 flat-card"
+                                    className="w-full rounded-[1rem] border border-border bg-card px-4 py-3 sm:px-6 sm:py-4 flat-card"
                                 >
                                     <Textarea
                                         ref={textareaRef}
@@ -220,8 +249,8 @@ export default function Journal() {
                                         onKeyDown={handleKeyDown}
                                         placeholder="What's on your mind today?"
                                         disabled={saving}
-                                        rows={2}
-                                        className="w-full min-h-[52px] max-h-[42vh] resize-none border-0 bg-transparent text-lg sm:text-xl leading-relaxed text-foreground focus-visible:ring-0 focus:outline-none placeholder:text-muted-foreground/50 p-0"
+                                        rows={1}
+                                        className="w-full min-h-[44px] max-h-[42vh] resize-none border-0 bg-transparent text-lg sm:text-xl leading-relaxed text-foreground focus-visible:ring-0 focus:outline-none placeholder:text-muted-foreground/50 p-0 overflow-hidden"
                                     />
                                 </div>
 
@@ -240,6 +269,7 @@ export default function Journal() {
                             <EmotionReveal
                                 emotion={savedEntry.emotion}
                                 confidence={savedEntry.confidence}
+                                associativeQuote={savedEntry.associativeQuote}
                                 onContinue={handleContinue}
                             />
                         </motion.div>

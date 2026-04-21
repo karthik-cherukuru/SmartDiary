@@ -41,6 +41,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 
 import { useAuth }   from '@/context/AuthContext'
+import { useResolvedAvatarUrl } from '@/hooks/useResolvedAvatarUrl'
 import { supabase }  from '@/config/supabase'
 import { getLifetimeStats } from '@/services/journalService'
 import { getStreak }        from '@/services/streakService'
@@ -58,6 +59,9 @@ export default function Profile() {
     const [savingProfile, setSavingProfile] = useState(false)
 
     const [stats, setStats] = useState(null)
+
+    const resolvedAvatarUrl = useResolvedAvatarUrl(profile?.avatar_url)
+    const avatarImageSrc = avatarFile ? avatarPreview : (resolvedAvatarUrl ?? profile?.avatar_url)
 
     // Load stats on mount
     useEffect(() => {
@@ -206,8 +210,8 @@ export default function Profile() {
                         {/* Avatar */}
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16 ring-2 ring-border">
-                                {avatarPreview && (
-                                    <AvatarImage src={avatarPreview} alt={displayName} />
+                                {avatarImageSrc && (
+                                    <AvatarImage src={avatarImageSrc} alt={displayName} />
                                 )}
                                 <AvatarFallback className="bg-secondary font-heading text-xl">
                                     {initials}

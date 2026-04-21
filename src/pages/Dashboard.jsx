@@ -1,16 +1,5 @@
 /**
- * Dashboard — the central hub after login.
- *
- * Applies:
- *  - Associative mode if no entry was written today
- *  - Corrective mode after the user saves an entry (passed via location state
- *    from the Journal page)
- *
- * Layout: three-column grid (streak | today card | recent entries)
- * All components use shadcn primitives.
- *
- * Confetti fires when a streak milestone is hit (triggered from Journal page
- * via location state).
+ * Dashboard — hub: greeting, corrective line (latest entry), streak, today card, recent entries.
  */
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -28,17 +17,11 @@ import { useTheme } from '@/context/ThemeContext'
 import { getEntries }    from '@/services/journalService'
 import { getStreak }     from '@/services/streakService'
 
-/**
- * Check if any of the given entries were created today.
- */
 function hasEntryToday(entries) {
     const today = new Date().toDateString()
     return entries.some(e => new Date(e.created_at).toDateString() === today)
 }
 
-/**
- * Fire a celebratory confetti burst.
- */
 function fireConfetti() {
     confetti({
         particleCount: 140,
@@ -66,14 +49,11 @@ export default function Dashboard() {
     const [loadingData, setLoadingData] = useState(true)
     const loadingRef = useRef(false)
 
-    // Reset loading ref on mount
     useEffect(() => {
         loadingRef.current = false
     }, [])
 
-    // Fetch entries and streak on mount
     const loadData = useCallback(async () => {
-        // Wait for auth to finish before attempting to load
         if (authLoading) return
 
         if (!user?.id) {
@@ -81,7 +61,6 @@ export default function Dashboard() {
             return
         }
 
-        // Prevent concurrent loading
         if (loadingRef.current) return
 
         loadingRef.current = true
@@ -104,26 +83,23 @@ export default function Dashboard() {
         }
     }, [user, authLoading])
 
-    // loadData is stable (useCallback); state is only set in async callbacks, not synchronously
     useEffect(() => {
         loadData()
     }, [loadData])
 
-    // Apply the correct theme mode based on today's entries
     useEffect(() => {
         if (loadingData || entries.length === 0) {
             setEmotion('neutral', 'associative')
             return
         }
 
-        const lastEntry   = entries[0]
-        const wroteToday  = hasEntryToday(entries)
-        const themeMode   = wroteToday ? 'corrective' : 'associative'
+        const lastEntry  = entries[0]
+        const wroteToday = hasEntryToday(entries)
+        const themeMode  = wroteToday ? 'corrective' : 'associative'
 
         setEmotion(lastEntry.emotion_label ?? 'neutral', themeMode)
     }, [entries, loadingData, setEmotion])
 
-    // Handle post-save state from Journal page (confetti + toast)
     useEffect(() => {
         const state = location.state
 
@@ -138,12 +114,16 @@ export default function Dashboard() {
             })
         }
 
-        // Clear location state so it doesn't re-trigger on back navigation
         window.history.replaceState({}, '')
     }, [location.state])
 
-    const lastEmotion    = entries[0]?.emotion_label ?? null
-    const wroteToday     = hasEntryToday(entries)
+    const lastEmotion = entries[0]?.emotion_label ?? null
+    const wroteToday  = hasEntryToday(entries)
+    /** Corrective line for days you have written (ties to dashboard copy about writing today). */
+    const correctiveQuote =
+        wroteToday && entries[0]?.corrective_quote?.trim()
+            ? entries[0].corrective_quote.trim()
+            : null
 
     return (
         <div
@@ -153,40 +133,62 @@ export default function Dashboard() {
             <Navbar />
 
             <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
-                {/* Greeting */}
                 <header className="mb-10">
-                    <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                        {profile?.display_name
-                            ? `Good to see you, ${profile.display_name}.`
-                            : 'Welcome back.'}
-                    </h1>
-                    <p className="text-muted-foreground text-base mt-2">
-                        {wroteToday
-                            ? "You've written today. Your diary is up to date."
-                            : "Your diary is waiting. Take a few minutes to check in."}
-                    </p>
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                                {profile?.display_name
+                                    ? `Good to see you, ${profile.display_name}.`
+                                    : 'Welcome back.'}
+                            </h1>
+                            <p className="text-muted-foreground text-base mt-2">
+                                {wroteToday
+                                    ? "You've written today. Your diary is up to date."
+                                    : 'Your diary is waiting. Take a few minutes to check in.'}
+                            </p>
+
+                            {correctiveQuote && (
+                                <div className="mt-4 rounded-2xl border border-border bg-secondary/50 px-4 py-4 lg:hidden">
+                                    <p className="font-mono-label text-[10px] text-muted-foreground uppercase tracking-wider mb-2">
+                                        A thought for your path
+                                    </p>
+                                    <p className="text-sm sm:text-base leading-relaxed text-foreground">
+                                        {correctiveQuote}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {correctiveQuote && (
+                            <div
+                                className="hidden lg:block w-full max-w-md shrink-0 rounded-2xl border border-border bg-secondary/50 px-5 py-4"
+                            >
+                                <p className="font-mono-label text-[10px] text-muted-foreground uppercase tracking-wider mb-2">
+                                    A thought for your path
+                                </p>
+                                <p className="text-sm leading-relaxed text-foreground">{correctiveQuote}</p>
+                            </div>
+                        )}
+                    </div>
                 </header>
 
-                {/* Three-column grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                    {/* Col 1 — Streak */}
-                    <div className="md:col-span-1">
-                        <StreakWidget
-                            streakData={streakData}
-                            onFreezeUsed={loadData}
-                        />
-                    </div>
-
-                    {/* Col 2 — Today CTA */}
-                    <div className="md:col-span-1">
+                {/* Mobile: today card first, then streak, then recent. Desktop: three columns. */}
+                <div className="flex flex-col gap-6 md:grid md:grid-cols-3 md:items-start">
+                    <div className="order-1 md:order-none">
                         <TodayCard
                             lastEmotion={lastEmotion}
                             hasWrittenToday={wroteToday}
                         />
                     </div>
 
-                    {/* Col 3 — Recent entries */}
-                    <div className="md:col-span-1">
+                    <div className="order-2 md:order-none">
+                        <StreakWidget
+                            streakData={streakData}
+                            onFreezeUsed={loadData}
+                        />
+                    </div>
+
+                    <div className="order-3 md:order-none">
                         <RecentEntries
                             entries={entries}
                             loading={loadingData}
